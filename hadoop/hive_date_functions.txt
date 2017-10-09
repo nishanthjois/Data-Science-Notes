@@ -1,0 +1,26 @@
+-- unix_timestamp() Gets current Unix timestamp in seconds. 
+select unix_timestamp() from uber.tripdata limit 1;
+
+	
+-- unix_timestamp(string date)
+Converts time string in format yyyy-MM-dd HH:mm:ss to Unix timestamp (in seconds), 
+select unix_timestamp(pickup_datetime) from uber.tripdata limit 1;
+
+-- year(string date)
+Returns the year part of a date or a timestamp string:
+select year(pickup_datetime) from uber.tripdata limit 1;
+
+-- month(string date)
+-- day(string date) dayofmonth(date)
+-- hour(string date)
+-- minute(string date)
+-- second(string date)
+-- weekofyear(string date)
+-- 	current_date	 Returns the current date
+select current_date from uber.tripdata limit 1;
+-- timestamp	current_timestamp	Returns the current timestamp 
+select current_timestamp from uber.tripdata limit 1;
+-- last_day(string date)	Returns the last day of the month 
+-- months_between(date1, date2)	Returns number of months between dates date1 and date2
+-- date format convertion
+select from_unixtime(unix_timestamp('2016/06/01','yyyy/MM/dd'),'yyyy-MM-dd') from uber.tripdata limit 1;

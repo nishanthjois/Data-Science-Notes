@@ -1,0 +1,42 @@
+create table employee_info1(id int primary key,name varchar(30),salary int,revision_time timestamp default current_timestamp on update current_timestamp);
+
+insert into employee_info1 values(1,'david',50000, '2015-09-10 10:15:20'),(2,'rahul',65900, '2015-08-09 02:10:20'),(3,'vinit',85000, '2016-01-15 09:19:05'),(4,'pradeep',79000,current_timestamp);
+
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/books --table employee_info --username root --target-dir /sqoop/dsregular7/employee_info/  -m 1
+
+insert into employee_info values(5,'teja',50000, '2015-09-10 10:15:9'),(6,'santosh',65900, '2016-03-09 02:10:20');
+
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/books --table employee_info --username root --target-dir /sqoop/employee_info/raw --incremental append --check-column id --last-value 4 -m 1
+
+
+incremental last modified:
+
+add and update rows:
+
+insert into employee_info1 values(5,'raj',25000,current_timestamp);
+insert into employee_info1 values(6,'gopi',35000,current_timestamp);
+
+update employee_info set revision_time=current_timestamp where id=1;
+
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/books --table employee_info --username root  --incremental lastmodified --check-column revision_time --last-value '2017-07-23 04:10:02' --target-dir /sqoop/employee_info/raw --append -m 1
+
+
+sqoop job
+
+sqoop job --create myincremental_b5 -- import --connect jdbc:mysql://192.168.64.131:3306/books --table employee_info1 --username root   --incremental lastmodified --check-column revision_time  --target-dir /sqoop/b5/employee_info1/ --append -m1 
+
+ sqoop job --list
+sqoop job --exec myincremental_b5
+
+insert into employee_info1 values(7,'smith',25000,current_timestamp);
+insert into employee_info1 values(8,'d',35000,current_timestamp);
+update employee_info1 set revision_time=current_timestamp where id=1;
+
+
+--password hadoop
+
+permission isues:
+set password for 'root'@'sandbox.hortonworks.com'=PASSWORD('hadoop');
+
+grant all privileges on *.* to 'root'@'sandbox.hortonworks.com'; 
+flush privileges;

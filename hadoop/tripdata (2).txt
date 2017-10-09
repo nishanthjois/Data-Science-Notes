@@ -1,0 +1,85 @@
+ mysql -h10.25.3.197 -uroot -p
+ use transport_data;
+ 
+sqoop import --connect jdbc:mysql://10.25.3.197:3306/transport_data --username root --password hadoop --query "select * from tripdata where(1=0 or \$CONDITIONS) limit 100000" --hive-import --hive-table tripdata --map-column-hive report_time=timestamp,pickup_datetime=timestamp,dropoff_datetime=timestamp --target-dir /mysqltemp3 --fields-terminated-by ',' --lines-terminated-by '\n' -m 1
+ 
+ 
+sqoop import --connect jdbc:mysql://10.25.3.197:3306/transport_data --username root --password hadoop --query "select * from tripfare where(1=0 or \$CONDITIONS) limit 100000" --hive-import --hive-table tripfare --map-column-hive report_time=timestamp,pickup_datetime=timestamp --target-dir /mysqltempp --fields-terminated-by ',' --lines-terminated-by '\n' -m 1
+
+
+--> normal plain tables:
+
+
+select td.vendor_id,td.serial_no,tf.fare_amount
+from tripdata td join tripfare tf
+on(td.serial_no = tf.serial_no)
+where tf.fare_amount > 20; 
+
+18.754 seconds
+
+
+select vendor_id,count(*) from tripdata td join tripfare tf
+on(td.serial_no = tf.serial_no) where tf.fare_amount > 20 group by td.vendor_id;
+
+22.167 seconds
+**************************************************************************************************
+
+Partition table:
+hive> SET hive.exec.dynamic.partition.mode=nonstrict;
+hive> SET hive.exec.dynamic.partition=true;
+
+
+--> 
+create table tripdata_partitioned(serial_no int,medallion string,report_time timestamp,hack_license string,rate_code int,store_and_fwd_flag string,pickup_datetime timestamp,dropoff_datetime timestamp,passenger_count int,trip_time_in_secs int,trip_distance float,pickup_longitude float,pickup_latitude float,dropoff_longitude float,dropoff_latitude float) partitioned by (vendor_id string);
+
+insert into tripdata_partitioned partition(vendor_id) select serial_no,medallion,report_time,hack_license,rate_code,store_and_fwd_flag,pickup_datetime,dropoff_datetime,passenger_count,trip_time_in_secs,trip_distance,pickup_longitude,pickup_latitude,dropoff_longitude,dropoff_latitude,vendor_id from tripdata;
+
+-->
+create table tripfare_partitioned(serial_no int,medallion string,report_time timestamp,hack_license string,pickup_datetime timestamp,payment_type string,fare_amount float,surcharge float,mta_tax float,tip_amount float,tolls_amount float,total_amount float) partitioned by (vendor_id string);
+
+insert into tripfare_partitioned partition(vendor_id) select serial_no,medallion,report_time,hack_license,pickup_datetime,payment_type,fare_amount,surcharge,mta_tax,tip_amount,tolls_amount,total_amount,vendor_id from tripfare;
+
+
+--> 
+select td.vendor_id,td.serial_no,tf.fare_amount
+from tripdata_partitioned td join tripfare_partitioned tf
+on(td.serial_no = tf.serial_no)
+where tf.fare_amount > 20; 
+
+13.664 seconds
+
+select vendor_id,count(*) from tripdata_partitioned td join tripfare_partitioned tf
+on(td.serial_no = tf.serial_no) where tf.fare_amount > 20 group by td.vendor_id;
+
+20.141 seconds
+**************************************************************************************************
+
+Bucketing tables:
+
+-->
+create table tripdata_bucket(serial_no int,medallion string,report_time timestamp,hack_license string,vendor_id string,rate_code int,store_and_fwd_flag string,pickup_datetime timestamp,dropoff_datetime timestamp,passenger_count int,trip_time_in_secs int,trip_distance float,pickup_longitude float,pickup_latitude float,dropoff_longitude float,dropoff_latitude float) clustered by (serial_no) into 10 buckets;
+
+ insert into tripdata_bucket select * from tripdata;
+ 
+-->
+create table tripfare_bucket(serial_no int,medallion string,report_time timestamp,hack_license string,vendor_id string,pickup_datetime timestamp,payment_type string,fare_amount float,surcharge float,mta_tax float,tip_amount float,tolls_amount float,total_amount float) clustered by (serial_no) into 10 buckets;
+
+insert into tripfare_bucket select * from tripfare;
+
+
+--> 
+select td.vendor_id,td.serial_no,tf.fare_amount
+from tripdata_bucket td join tripfare_bucket tf
+on(td.serial_no = tf.serial_no)
+where tf.fare_amount > 20; 
+
+13.523 seconds
+ 
+select vendor_id,count(*) from tripdata_bucket td join tripfare_bucket tf
+on(td.serial_no = tf.serial_no) where tf.fare_amount > 20 group by td.vendor_id;
+
+17.348 seconds
+
+********************************************************************************************
+
+

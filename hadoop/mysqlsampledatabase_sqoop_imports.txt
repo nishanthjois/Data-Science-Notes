@@ -1,0 +1,31 @@
+
+
+mysql -t < /APB5/mysqlsampledatabase.sql
+-- hdfs import
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/classicmodels --username root --table customers --target-dir /sqoop/APB5/customers -m 3
+
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/classicmodels --username root --query "select * from customers  where creditLimit  > 100 \$CONDITIONS"  --target-dir /sqoop/APB5/customers_credit1 -m 1
+
+sqoop import --connect jdbc:mysql://192.168.64.131:3306/classicmodels --username root --table  customers  --where 'creditLimit  > 100'  --target-dir /sqoop/APB5/customers_credit -m 1
+
+--query 'select * from customers where creditlimit  > 100';
+
+
+
+
+
+
+
+
+
+
+
+-- hive import 
+sqoop import --connect jdbc:mysql://192.168.64.132:3306/classicmodels --username root --password hadoop --table customers --hive-import --hive-table ap.customers_test_new --target-dir /sqoop/customers9 -m 1 
+
+select count(*) from customers;
+
+sqoop import --connect jdbc:mysql://192.168.64.132:3306/classicmodels --username root --table orders --hive-import --hive-table orders --target-dir /sqoop/orders -m 1 
+
+
+hadoop fs -put /BDA/* /user/hue/hiveinput/

@@ -1,0 +1,26 @@
+--sqoop incremental lastmodified
+
+create table employee_info(id int primary key,name varchar(30),salary int,revision_time timestamp default current_timestamp on update current_timestamp);
+
+insert into employee_info values(1,'david',50000,'2015-09-10 10:15:20'),(2,'rahul',65900,'2015-08-09 02:10:20'),(3,'teja',85000,'2016-01-15 09:19:05'),(4,'pradeep',79000,current_timestamp);
+
+select * from employee_info;
+
+Step 2:
+First import the source table into hdfs using sqoop.
+
+sqoop import -connect jdbc:mysql://10.25.3.209:3306/employee --username root --password Hadoop --table employee_info --target-dir /user/employee_data -m 1
+
+Now two new records are inserted and one record  is updated:
+
+insert into employee_info values(5,’rajesh’,25000,current_timestamp);
+insert into employee_info values(6,’kiran’,35000,current_timestamp);
+update employee_info set revision_time=current_timestamp where id=1;
+
+select * from employee_info;
+
+sqoop import --connect jdbc:mysql://10.25.3.209:3306/employee --table employee_info --username root --password hadoop --incremental lastmodified --check-column revision_time --last-value '2016-03-18 12:17:57' --target-dir /user/employee_data--append -m 1
+
+sqoop job --create emp_info_incr -- import --connect jdbc:mysql://192.168.64.132:3306/books --username root --table employee_info  --target-dir /hadoop8am/sqoop_import/employee_info_incr1 --incremental lastmodified --check-column revision_time --append  --m 1
+
+

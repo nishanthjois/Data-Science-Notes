@@ -1,0 +1,51 @@
+use training;
+CREATE EXTERNAL TABLE tripdata (
+  `serial_no` bigint,
+  `medallion` string,
+  `report_time` timestamp,
+  `hack_license` string,
+  `vendor_id` string,
+  `rate_code` int,
+  `store_and_fwd_flag` string,
+  `pickup_datetime` timestamp,
+  `dropoff_datetime` string,
+  `passenger_count` int,
+  `trip_time_in_secs` int,
+  `trip_distance` double,
+  `pickup_longitude` double,
+  `pickup_latitude` double,
+  `dropoff_longitude` double,
+  `dropoff_latitude` double)
+COMMENT 'Practise Table'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  LINES TERMINATED BY '\n'
+LOCATION
+  '/user/hue/hiveinput/tripdata/'
+  TBLPROPERTIES (
+     'skip.header.line.count' = '1');
+	 
+	 
+CREATE EXTERNAL TABLE tripfare(
+  `serial_no` bigint,
+  `medallion` string,
+  `report_time` timestamp,
+  `hack_license` string,
+  `vendor_id` string,
+  `pickup_datetime` timestamp,
+  `payment_type` string,
+  `fare_amount` double,
+  `surcharge` double,
+  `mta_tax` double,
+  `tip_amount` double,
+  `tolls_amount` double,
+  `total_amount` double)
+COMMENT 'Practise Table'
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY ','
+  LINES TERMINATED BY '\n'
+LOCATION
+  '/user/hue/hiveinput/tripfare/'
+  TBLPROPERTIES (
+     'skip.header.line.count' = '1');
+

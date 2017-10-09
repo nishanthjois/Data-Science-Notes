@@ -1,0 +1,13 @@
+
+in 10.1.10.212:
+
+sqoop import --connect jdbc:mysql://10.25.3.197:3306/company_information --username root --password hadoop --table immigration_details_ten_kpt_rc  --hbase-table immigration_details_ten_kpt_rc --column-family immigration --hbase-row-key emp_id --hbase-create-table --target-dir /all/test -m 1;
+
+
+
+list --> see tables
+
+scan 'immigration_details_ten_kpt_rc'
+
+
+

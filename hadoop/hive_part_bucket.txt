@@ -1,0 +1,53 @@
+  CREATE TABLE emp_part
+      (
+      emp_no int,
+      birth_date date,
+      first_namme string,
+      last_name string,
+      hire_date string)
+      PARTITIONED BY (gender string)
+      ROW FORMAT DELIMITED
+      FIELDS TERMINATED BY '\t'
+      LINES TERMINATED BY '\n';
+
+	FROM emp_raw
+    
+ INSERT OVERWRITE TABLE rmp_part PARTITION(gender ="M")
+      select emp_no,birth_date,first_name,last_name,hire_date;
+	
+	
+	dynamic partitioning:
+	
+	FROM emp_raw
+      INSERT OVERWRITE TABLE emp_dpart PARTITION(gender)
+      select emp_no,birth_date,first_name,last_name,hire_date,gender;
+	
+	
+	
+	 sqoop-import  --connect jdbc:mysql://192.168.64.132:3306/employees --username root --table salaries --hive-import --hive-table hadoop8am.salaries_raw --map-column-hive from_date=date --create-hive-table --fields-terminated-by ',' --lines-terminated-by '\n' --delete-target-dir --target-dir /user/hue/emp_sal
+
+select e.emp_no,e.birth_date,e.first_name,e.gender,s.salary from emp_raw e JOIN salaries_raw s ON(e.emp_no = s.emp_no)
+
+select e.id,e.birth_date,e.first_name,e.gender,s.salary from emp_bucket e JOIN salaries_bucket s ON(e.id = s.emp_no);
+
+
+hive> desc emp_raw;
+OK
+emp_no                  int
+birth_date              date
+first_name              string
+last_name               string
+gender                  string
+hire_date               string
+Time taken: 1.444 seconds, Fetched: 6 row(s)
+hive> CREATE TABLE emp_part_bucket(
+    > emp_no int,
+    > birth_date string,
+    > last_name string,
+    > hire_date string)
+    > PARTITIONED BY (gender string)
+    > CLUSTERED BY (emp_no) into 2 buckets;
+OK
+Time taken: 3.105 seconds
+hive> insert into emp_part_bucket PARTITION(gender)
+    > select emp_no,birth_date,first_name,last_name,hire_date from emp_raw;
