@@ -1,0 +1,30 @@
+CREATE TABLE Employee(
+ID int,
+NAME string, 
+desig string,
+SALARY float 
+)
+COMMENT 'This is Employee table in ORC file format'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS ORC tblproperties ("orc.compress"="ZLIB");
+
+
+insert into Employee
+select * from emp;
+
+CREATE TABLE Employee_p(
+ID int,
+NAME string, 
+desig string,
+SALARY float 
+)
+COMMENT 'This is Employee table in parquet file format'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS parquet tblproperties ("orc.compress"="ZLIB");
+
+
+insert into Employee_p
+select * from emp;
+

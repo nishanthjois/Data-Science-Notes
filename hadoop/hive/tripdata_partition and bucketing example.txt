@@ -1,0 +1,66 @@
+
+// static partition
+
+CREATE TABLE summary_table1(id int, value string) PARTITIONED BY (feed_date string);
+set hive.exec.dynamic.partition.mode=nonstrict
+ALTER TABLE summary_table1 ADD PARTITION (feed_date = '2014-01-22');
+ALTER TABLE summary_table1 ADD PARTITION (feed_date = '2014-02-23');
+ALTER TABLE summary_table1 ADD PARTITION (feed_date = '2014-03-24');
+insert into summary_table1 PARTITION(feed_date) values (1,'abc1',"2014-01-22");
+insert into summary_table1 PARTITION(feed_date) values (2,'abc2',"2014-02-23");
+insert into summary_table1 PARTITION(feed_date) values (3,'abc3',"2014-03-24");
+
+create table tripdata_s_partitioned(medallion string,report_time timestamp,hack_license string,rate_code int,store_and_fwd_flag string,pickup_datetime timestamp,dropoff_datetimce timestamp,passenger_count int,trip_time_in_secs int,trip_distance float,pickup_longitude float,pickup_latitude float,dropoff_longitude float,dropoff_latitude float) partitioned by (vendor_id string);
+
+insert into tripdata_s_partitioned partition(vendor_id='CMT') select medallion,report_time,hack_license,rate_code,store_and_fwd_flag,pickup_datetime,dropoff_datetime,passenger_count,trip_time_in_secs,trip_distance,pickup_longitude,pickup_latitude,dropoff_longitude,dropoff_latitude from tripdata where vendor_id='CMT' ;
+
+// this adds to the static partition 
+set hive.exec.dynamic.partition.mode=nonstrict
+create table tripdata_partitioned(serial_no int,medallion string,report_time timestamp,hack_license string,rate_code int,store_and_fwd_flag string,pickup_datetime timestamp,dropoff_datetime timestamp,passenger_count int,trip_time_in_secs int,trip_distance float,pickup_longitude float,pickup_latitude float,dropoff_longitude float,dropoff_latitude float) partitioned by (vendor_id string);
+
+insert into tripdata_partitioned partition(vendor_id) select serial_no,medallion,report_time,hack_license,rate_code,store_and_fwd_flag,pickup_datetime,dropoff_datetime,passenger_count,trip_time_in_secs,trip_distance,pickup_longitude,pickup_latitude,dropoff_longitude,dropoff_latitude,vendor_id from tripdata;
+
+
+set hive.enforce.bucketing = true; // only for cloudera
+create table tripdata_bucket(serial_no int,medallion string,
+report_time timestamp,hack_license string,vendor_id string,rate_code int,store_and_fwd_flag
+                                  string,pickup_datetime timestamp,dropoff_datetime timestamp,
+                                  passenger_count int,trip_time_in_secs int,trip_distance float,
+                                  pickup_longitude float,pickup_latitude float,dropoff_longitude float,
+                                  dropoff_latitude float)clustered by (serial_no) into 5 buckets;
+
+create table tripfare_bucket(tripfare_serial_no      bigint,
+medallion               varchar(100),
+tripfare_report_time    timestamp,
+tripfare_hack_license   string,
+tripfare_vendor_id      string,
+tripfare_pickup_datetime        timestamp,
+tripfare_payment_type   string,
+tripfare_fare_amount    double,
+tripfare_surcharge      double,
+tripfare_mta_tax        double,
+tripfare_tip_amount     double,
+tripfare_tolls_amount   double,
+tripfare_total_amount   double)
+clustered by (tripfare_serial_no) into 5 buckets;
+
+insert into tripdata_bucket 
+select * from tripdata;
+
+select td.serial_no,tf.tripfare_total_amount
+  from tripdata_bucket td JOIN tripfare_bucket tf on (td.serial_no = tf.tripfare_serial_no) limit 10;
+	
+	
+create table tripdata_part_bucket(serial_no int,medallion string,
+report_time timestamp,hack_license string,rate_code int,store_and_fwd_flag
+                                  string,pickup_datetime timestamp,dropoff_datetime timestamp,
+                                  passenger_count int,trip_time_in_secs int,trip_distance float,
+                                  pickup_longitude float,pickup_latitude float,dropoff_longitude float,
+                                  dropoff_latitude float)partitioned by (vendor_id string) clustered by (serial_no) into 5 buckets;
+
+insert into tripdata_part_bucket partition(vendor_id) 
+select serial_no,medallion,report_time,hack_license,rate_code,
+store_and_fwd_flag,pickup_datetime,dropoff_datetime,passenger_count,
+trip_time_in_secs,trip_distance,pickup_longitude,
+pickup_latitude,dropoff_longitude,dropoff_latitude,
+vendor_id from tripdata;

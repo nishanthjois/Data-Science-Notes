@@ -1,0 +1,24 @@
+
+add jar /AP/hivexmlserde-1.0.0.0.jar; 
+
+CREATE TABLE xml_bank(customer_id STRING, income BIGINT, demographics map<string,string>, financial map<string,string>)
+ROW FORMAT SERDE 'com.ibm.spss.hive.serde2.xml.XmlSerDe'
+WITH SERDEPROPERTIES (
+"column.xpath.customer_id"="/record/@customer_id",
+"column.xpath.income"="/record/income/text()",
+"column.xpath.demographics"="/record/demographics/*",
+"column.xpath.financial"="/record/financial/*"
+)
+STORED AS
+INPUTFORMAT 'com.ibm.spss.hive.serde2.xml.XmlInputFormat'
+OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+TBLPROPERTIES (
+"xmlinput.start"="<record customer",
+"xmlinput.end"="</record>"
+);
+
+load data  inpath '/user/hue/hiveinput/demo.xml' OVERWRITE into TABLE xml_bank;
+
+LOAD DATA INPATH '/user/hue/Hiveinput/jsoninput.txt'
+OVERWRITE INTO TABLE my_table;
+select customer_id,income,demographics['gender'],financial['creddebt'] from xml_bank;

@@ -1,0 +1,4 @@
+{"field1":"data1","field2":100,"field3":"more data1","field4":123.001}
+{"field1":"data2","field2":200,"field3":"more data2","field4":123.002}
+{"field1":"data3","field2":300,"field3":"more data3","field4":123.003}
+{"field1":"data4","field2":400,"field3":"more data4","field4":123.004}

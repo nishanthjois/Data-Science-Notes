@@ -1,0 +1,26 @@
+<records>
+    <record customer_id="0000-JTALA">
+        <income>200000</income>     
+        <demographics>
+            <gender>F</gender>
+            <agecat>1</agecat>
+            <edcat>1</edcat>
+            <jobcat>2</jobcat>
+            <empcat>2</empcat>
+            <retire>0</retire>
+            <jobsat>1</jobsat>
+            <marital>1</marital>
+            <spousedcat>1</spousedcat>
+            <residecat>4</residecat>
+            <homeown>0</homeown>
+            <hometype>2</hometype>
+            <addresscat>2</addresscat>
+        </demographics>
+        <financial>
+            <income>18</income>
+            <creddebt>1.003392</creddebt>
+            <othdebt>2.740608</othdebt>
+            <default>0</default>
+        </financial>
+    </record>
+</records>
